@@ -1,0 +1,53 @@
+name: build-publish-jenkins-jdk17-image
+on:
+  #  push:
+  #    branches:
+  #      - main
+  workflow_dispatch:
+    inputs:
+      python_version:
+        description: "Python version"
+        type: string
+        default: "3.11.0"
+
+permissions:
+  contents: write
+
+run-name: build-publish-python-${{ inputs.python_version }}-image
+jobs:
+  build-publish-python-${{ inputs.python_version }}-image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_ACCESS_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and publish docker image with tag
+        uses: docker/build-push-action@v6
+        with:
+          file: Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
+          build-args: |
+            PYTHON_VERSION=${{ inputs.python_version }}          
+
+      - name: set up docker and scan docker image for vulnerabilities
+        uses: docker-practice/actions-setup-docker@master
+      - run: |
+          set -x
+          docker version
+          docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
