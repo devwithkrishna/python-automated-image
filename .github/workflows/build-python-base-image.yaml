@@ -15,7 +15,7 @@ permissions:
 
 run-name: build-publish-python-${{ inputs.python_version }}-image
 jobs:
-  build-publish-python-${{ inputs.python_version }}-image:
+  build-publish-python-image:
     runs-on: ubuntu-latest
 
     steps:
