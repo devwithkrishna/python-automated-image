@@ -17,6 +17,9 @@ RUN set -eux; \
 	apt-get install -y --no-install-recommends \
 		libbluetooth-dev \
         ca-certificates \
+	curl \
+        wget \
+	git \
     	netbase \
 		tk-dev \
 		uuid-dev \
