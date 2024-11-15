@@ -1,4 +1,4 @@
-name: build-publish-python-image
+name: build-publish-python-image-trimmed-tag
 on:
   #  push:
   #    branches:
@@ -53,4 +53,4 @@ jobs:
     - run: |
         set -x
         docker version
-        docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
+        docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ env.PYTHON_VERSION_MAJOR_MINOR }}
