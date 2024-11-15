@@ -1,8 +1,8 @@
-# accept Python version as a build argument
-ARG PYTHON_VERSION
-
 # using debian bookworm (v 12) as base image
 FROM debian:bookworm
+
+# accept Python version as a build argument
+ARG PYTHON_VERSION
 
 # ensure local python is preferred over distribution python
 # This adds /usr/local/bin to the existing PATH variable.
