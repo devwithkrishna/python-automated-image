@@ -1,111 +1,88 @@
-# using debian bookworm (v 12) as base image
+# Using Debian Bookworm (v12) as the base image
 FROM debian:bookworm
 
-# accept Python version as a build argument
+# Accept Python version as a build argument
 ARG PYTHON_VERSION
 
-# ensure local python is preferred over distribution python
-# This adds /usr/local/bin to the existing PATH variable.
-ENV PATH /usr/local/bin:$PATH
+# Ensure local Python is preferred over the distribution's Python
+ENV PATH="/usr/local/bin:$PATH"
 
-# applications in the environment can handle UTF-8 encoded characters correctly.
-ENV LANG C.UTF-8
+# Applications in the environment can handle UTF-8 encoded characters correctly
+ENV LANG="C.UTF-8"
 
-# runtime dependencies
+# Install runtime dependencies
 RUN set -eux; \
-	apt-get update; \
-	apt-get install -y --no-install-recommends \
-		libbluetooth-dev \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        libbluetooth-dev \
         ca-certificates \
-		curl \
+        curl \
         wget \
-		git \
-    	netbase \
-		uuid-dev \
-		dpkg-dev \
-		gcc \
-		gnupg \
+        git \
+        netbase \
+        uuid-dev \
+        dpkg-dev \
+        gcc \
+        gnupg \
 		libbluetooth-dev \
-		libbz2-dev \
-		libc6-dev \
-		libdb-dev \
-		libffi-dev \
-		libgdbm-dev \
-		liblzma-dev \
-		libncursesw5-dev \
-		libreadline-dev \
-		libsqlite3-dev \
-		libssl-dev \
-		make \
-		tk-dev \
+        libbz2-dev \
+        libc6-dev \
+        libdb-dev \
+        libffi-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        libncursesw5-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        make \
+        tk-dev \
 		uuid-dev \
-		xz-utils \
-		zlib1g-dev \
-	; \
-	rm -rf /var/lib/apt/lists/*
+        xz-utils \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# set as an environment variable for use within the Dockerfile
+# Set the Python version as an environment variable for later use
 ENV PYTHON_VERSION=${PYTHON_VERSION}
 
-# build and compile python
+# Build and compile Python
 RUN set -eux; \
-	\
-	wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"; \
-  
-    # extracting python to specific folder /usr/src/python and removed tar file to save space
-	mkdir -p /usr/src/python; \
-	tar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \
-	rm python.tar.xz; \
-	\
-	cd /usr/src/python; \
-	gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"; \
-	./configure \
-		--build="$gnuArch" \
-		--enable-loadable-sqlite-extensions \
-		--enable-optimizations \
-		--enable-option-checking=fatal \
-		--enable-shared \
-		--with-lto \
-		--with-ensurepip \
-	; \
-	nproc="$(nproc)"; \
-	EXTRA_CFLAGS="$(dpkg-buildflags --get CFLAGS)"; \
-	LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"; \
-	make -j "$nproc" \
-		"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}" \
-		"LDFLAGS=${LDFLAGS:-}" \
-	; \
-# prevent accidental usage of a system installed libpython of the same version
-	rm python; \
-	make -j "$nproc" \
-		"EXTRA_CFLAGS=${EXTRA_CFLAGS:-}" \
-		"LDFLAGS=${LDFLAGS:--Wl},-rpath='\$\$ORIGIN/../lib'" \
-		python \
-	; \
-	make install; \
-	\
-	ldconfig; \
-	\
+    wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"; \
+    mkdir -p /usr/src/python; \
+    tar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz; \
+    rm python.tar.xz; \
+    cd /usr/src/python; \
+    gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)"; \
+    ./configure \
+        --build="$gnuArch" \
+        --enable-loadable-sqlite-extensions \
+        --enable-optimizations \
+        --enable-option-checking=fatal \
+        --enable-shared \
+        --with-lto \
+        --with-ensurepip; \
+    nproc="$(nproc)"; \
+    make -j "$nproc"; \
+    make install; \
+    ldconfig; \
 	export PYTHONDONTWRITEBYTECODE=1; \
-	python3 --version; \
-	\
-	pip3 install \
-		--disable-pip-version-check \
-		--no-cache-dir \
-		--no-compile \
-		'setuptools==68.0.0' \
-		wheel \
-	; \
-	pip3 --version
+    python3 --version; \
+    pip3 install \
+        --disable-pip-version-check \
+        --no-cache-dir \
+        --no-compile \
+        'setuptools==68.0.0' \
+        wheel; \
+    pip3 --version
 
-
-# make some useful symlinks that are expected to exist ("/usr/local/bin/python" and friends)
+# Create symlinks for common Python utilities
 RUN set -eux; \
-	for src in idle3 pip3 pydoc3 python3 python3-config; do \
-		dst="$(echo "$src" | tr -d 3)"; \
-		[ -s "/usr/local/bin/$src" ]; \
-		[ ! -e "/usr/local/bin/$dst" ]; \
-		ln -svT "$src" "/usr/local/bin/$dst"; \
-	done
+    for src in idle3 pip3 pydoc3 python3 python3-config; do \
+        dst="$(echo "$src" | tr -d 3)"; \
+        [ -s "/usr/local/bin/$src" ]; \
+        [ ! -e "/usr/local/bin/$dst" ]; \
+        ln -svT "$src" "/usr/local/bin/$dst"; \
+    done
 
+# Set the default command to Python3
 CMD ["python3"]
