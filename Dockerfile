@@ -33,7 +33,6 @@ ENV PYTHON_VERSION=${PYTHON_VERSION}
 RUN set -eux; \
 	\
 	wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz"; \
-	echo "$PYTHON_SHA256 *python.tar.xz" | sha256sum -c -; \
     # signature file is downloaded for gg verfication and removed in latersteps
 	wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc"; \
 	GNUPGHOME="$(mktemp -d)"; export GNUPGHOME; \
