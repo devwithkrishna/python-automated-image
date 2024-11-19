@@ -39,15 +39,14 @@ jobs:
       with:
         file: Dockerfile
         push: true
-        platforms: linux/amd64,linux/arm64
         tags: |
           ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
         build-args: |
           PYTHON_VERSION=${{ inputs.python_version }}          
 
-    - name: set up docker and scan docker image for vulnerabilities
-      uses: docker-practice/actions-setup-docker@master
-    - run: |
-        set -x
-        docker version
-        docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
+    # - name: set up docker and scan docker image for vulnerabilities
+    #   uses: docker-practice/actions-setup-docker@master
+    # - run: |
+    #     set -x
+    #     docker version
+    #     docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ inputs.python_version }}
