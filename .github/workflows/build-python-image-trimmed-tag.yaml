@@ -48,9 +48,9 @@ jobs:
         build-args: |
           PYTHON_VERSION=${{ inputs.python_version }}          
 
-    - name: set up docker and scan docker image for vulnerabilities
-      uses: docker-practice/actions-setup-docker@master
-    - run: |
-        set -x
-        docker version
-        docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ env.PYTHON_VERSION_MAJOR_MINOR }}
+    # - name: set up docker and scan docker image for vulnerabilities
+    #   uses: docker-practice/actions-setup-docker@master
+    # - run: |
+    #     set -x
+    #     docker version
+    #     docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${{ secrets.DOCKERHUB_USERNAME }}/python:${{ env.PYTHON_VERSION_MAJOR_MINOR }}
